@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta id="viewport" name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name=”apple-mobile-web-app-status-bar-style” content=black” />
+<title>下拉刷新</title>
+<style>
+body, a, ul, li, div {
+	margin:0;
+	padding:0;
+}
+body {
+
+	background:#eee;
+}
+ul {
+	list-style-type:none
+}
+a {
+	color:#444;
+	text-decoration:none;
+	font-size:14px;
+}
+a:hover {
+	color:#000;
+}
+.wrap {
+	height: 100%;
+}
+.content li {
+	padding-left: 20px;
+	line-height: 50px;
+	border-bottom:1px solid #ddd;
+}
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+	<div class="content" id="J_scrller">
+		<ul>
+			<li class="row">Row 1</li>
+			<li class="row">Row 2</li>
+			<li class="row">Row 3</li>
+			<li class="row">Row 4</li>
+			<li class="row">Row 5</li>
+			<li class="row">Row 6</li>
+			<li class="row">Row 7</li>
+			<li class="row">Row 8</li>
+			<li class="row">Row 9</li>
+			<li class="row">Row 10</li>
+			<li class="row">Row 11</li>
+			<li class="row">Row 12</li>
+			<li class="row">Row 13</li>
+			<li class="row">Row 14</li>
+			<li class="row">Row 15</li>
+
+			<li class="row">Row 16</li>
+			<li class="row">Row 17</li>
+			<li class="row">Row 18</li>
+			<li class="row">Row 19</li>
+			<li class="row">Row 20</li>
+			<li class="row">Row 21</li>
+			<li class="row">Row 22</li>
+			<li class="row">Row 23</li>
+			<li class="row">Row 24</li>
+			<li class="row">Row 25</li>
+			<li class="row">Row 26</li>
+			<li class="row">Row 27</li>
+			<li class="row">Row 28</li>
+			<li class="row">Row 29</li>
+			<li class="row">Row 30</li>
+		</ul>
+	</div>
+</div>
+</body>
+</html>
+<script src="zepto.min.js"></script>
+<script src="zepto.refresh.js"></script>
+<script>
+var totalNumber = 30;
+
+$(window).refresh({
+	// 向上
+	refreshCallback: function() {
+		// window.location.reload();
+	},
+	// 
+	loadingMoreCallback: function() {
+		var tpl = '';
+
+		console.log(1212);
+
+		for (var i = 0; i < 10; i++) {
+			totalNumber++;
+
+			tpl += '<li class="row">Row '+ totalNumber +'</li>'
+		}
+
+		$('#J_scrller ul').append(tpl);
+	}
+});	
+</script>
