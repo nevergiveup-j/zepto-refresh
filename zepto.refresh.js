@@ -67,7 +67,8 @@
 
     // 分享默认配置
     var defaults = {
-        contentEl: '',
+        // 内容ID
+        contentEl: '#J_content',
         // 默认开启刷新
         isRefresh: true,
         // 下拉可刷新高度
@@ -87,12 +88,13 @@
     var viewHeight = $(window).height();
 
 
-    function Refresh( $this, options, callback ) {
+    function Refresh( $this, options ) {
 
         this.$wrap = $this;
-        this.$content = $('#J_scrller');
 
         this.opts = $.extend(true, {}, defaults, options || {});
+
+        this.$content = $(this.opts.contentEl);
 
         this.startY = 0;
         this.isPullToRefresh = false;
@@ -275,7 +277,7 @@
 
     $.fn.refresh = function( options, callback ) {
         return this.each(function() {
-            new Refresh( $(this), options, callback );
+            new Refresh( $(this), options );
         })
     };
     
