@@ -86,12 +86,13 @@ var totalNumber = 30;
 
 $(window).refresh({
 	// 向上
-	refreshCallback: function() {
+	refreshCallback: function(complete) {
 		// window.location.reload();
 	},
 	// 
-	loadingMoreCallback: function() {
+	loadingMoreCallback: function(complete) {
 		var tpl = '';
+
 
 		console.log(1212);
 
@@ -102,6 +103,7 @@ $(window).refresh({
 		}
 
 		$('#J_scrller ul').append(tpl);
+		complete();
 	}
 });	
 </script>

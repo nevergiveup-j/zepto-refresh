@@ -219,6 +219,13 @@
             return;
         }
 
+        /**
+         * 回调执行完，回调
+         */   
+        function complete() {
+            that.$pullToRefresh.hide();
+        }
+
         // 添加动画事件
         that.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
 
@@ -226,7 +233,7 @@
 
         that.$pullToRefresh.show();
         // 回调
-        that.opts.refreshCallback && that.opts.refreshCallback();
+        that.opts.refreshCallback && that.opts.refreshCallback(complete);
         
 
         setTimeout(function() {
@@ -245,17 +252,21 @@
             viewTop = viewHeight + scrollTop,
             moreTime = null;
 
+        /**
+         * 回调执行完，回调
+         */   
+        function complete() {
+            that.isLoading = false;
+            that.wrapHeight = that.$content.height();
+            that.$loadingMore.hide();
+        }    
 
         if ( that.wrapHeight <= viewTop  && that.oldScrollTop < scrollTop && !that.isLoading ) {
             that.isLoading = true;
 
             that.$loadingMore.show();
-            that.opts.loadingMoreCallback && that.opts.loadingMoreCallback();
 
-            moreTime = setTimeout(function() {
-                that.isLoading = false;
-                that.wrapHeight = that.$content.height();
-            }, 1000);
+            that.opts.loadingMoreCallback && that.opts.loadingMoreCallback(complete);
         }    
         
         that.oldScrollTop = scrollTop;
