@@ -27,6 +27,8 @@ a {
 a:hover {
 	color:#000;
 }
+
+
 .wrap {
 	height: 100%;
 }
@@ -35,6 +37,7 @@ a:hover {
 	line-height: 50px;
 	border-bottom:1px solid #ddd;
 }
+
 
 
 </style>
@@ -85,9 +88,12 @@ a:hover {
 var totalNumber = 30;
 
 $(window).refresh({
+	contentEl: '#J_scrller',
 	// 向上
 	refreshCallback: function(complete) {
-		// window.location.reload();
+		 setTimeout(function() {
+			 window.location.reload();
+		 }, 1000)
 	},
 	// 
 	loadingMoreCallback: function(complete) {
@@ -103,7 +109,7 @@ $(window).refresh({
 		}
 
 		$('#J_scrller ul').append(tpl);
-		complete();
+		complete('finish');
 	}
 });	
 </script>

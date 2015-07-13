@@ -1,7 +1,7 @@
 /**
  * @Description: 下拉到底部和上拉到顶部再拉就出现刷新效果
  * @Author: wangjun
- * @Update: 2015-05-14 16:00
+ * @Update: 2015-07-13 18:00
  * @version: 1.0
  * @Github URL: https://github.com/nevergiveup-j/Zepto.refresh
  */
@@ -71,10 +71,14 @@
         contentEl: '#J_content',
         // 默认开启刷新
         isRefresh: true,
-        // 下拉可刷新高度
-        distanceToRefresh: 50,
         // 触摸移动的方向
         movePosition   : null,
+        // 下拉阈值
+        minDistanceToRefresh: 50,
+        // 下拉最大阈值
+        maxDistanceToRefresh: 200,
+        // 更新限制时间, 默认不限制
+        interval : 5,
         // 刷新回调
         refreshCallback: function() {
 
@@ -101,8 +105,9 @@
         this.isLoading = false;
         this.wrapHeight = this.$content.height();
         this.oldScrollTop = 0;
+        this.loadingFinishTime = new Date().getTime();
 
-        this.scrollTop = $(window).scrollTop();
+        this.scrollTop = this.$content.scrollTop();
         this.init();
     };
 
@@ -123,20 +128,49 @@
 
         var refreshTpl = [
             '<style>',
-            '.preloader-refresh {display: none; width: 100%;text-align: center;height: 40px;line-height:40px;background:#999;}',
+            '.preloader-refresh {display:none;position: absolute;top: 0;left: 0;width: 100%;text-align: center;padding: 10px 0;z-index: 800}',
+            '.preloader-refresh .preloader-refresh-content {width: 40px;height: 40px;margin: 0 auto;overflow: hidden;background-color: #fafafa;border-radius: 40px;box-shadow: 0 4px 10px #bbb}',
             '</style>',
             '<div class="preloader-refresh">',
-                '下拉刷新',
+                '<div class="preloader-refresh-content">',
+                    '<svg id="loader-tip-svg" x="0px" y="0px"',
+                        'width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">',
+                        '<path fill="#dd0202" d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z">',
+                            '<animateTransform attributeType="xml"',
+                                'attributeName="transform"',
+                                'type="rotate"',
+                                'from="0 25 25"',
+                                'to="360 25 25"',
+                                'dur="0.6s"',
+                                'repeatCount="indefinite"/>',
+                        '</path>',
+                    '</svg>',
+                '</div>',
             '</div>'
         ].join('');
 
 
         var moveTpl = [
             '<style>',
-            '.preloader-loading-more {display: none; width: 100%;text-align: center;height: 40px;line-height:40px;background:#999;}',
+            '.preloader-loading-more {padding: 15px 10px;text-align:center;}',
+            '.preloader-loading-more:before,.preloader-loading-more:after {content:""}',
+            '.preloader-loading-more .loading-bounce, .preloader-loading-more:before, .preloader-loading-more:after {width: 15px;height: 15px;background-color: #dd0202;-webkit-border-radius: 100%;border-radius: 100%;display: inline-block; -webkit-animation: bouncedelay 1.4s infinite ease-in-out;animation: bouncedelay 1.4s infinite ease-in-out; -webkit-animation-fill-mode: both;animation-fill-mode: both;}',
+            '.preloader-loading-more:before {-webkit-animation-delay: -0.32s;animation-delay: -0.32s;}',
+            '.preloader-loading-more .loading-bounce {-webkit-animation-delay: -0.16s;animation-delay: -0.16s;}',
+            '@-webkit-keyframes bouncedelay {',
+                '0%, 80%, 100% { -webkit-transform: scale(0.0) }',
+                '40% { -webkit-transform: scale(1.0) }',
+            '}',
+            '@keyframes bouncedelay {',
+                '0%, 80%, 100% {',
+                    'transform: scale(0.0);',
+                '} 40% {',
+                    'transform: scale(1.0);',
+                '}',
+            '}',
             '</style>',
             '<div class="preloader-loading-more">',
-                '加载更多',
+                '<span class="loading-bounce"></span>',
             '</div>'
         ].join('');
 
@@ -149,6 +183,7 @@
         // 加载更多模板
         that.$content.after( moveTpl );
         that.$loadingMore = $('.preloader-loading-more');
+
     };
     
     /**
@@ -160,6 +195,7 @@
 
         that.$wrap
             .on('touchstart', function(e) {
+                that.startX = e.touches[0].pageX;
                 that.startY = e.touches[0].pageY;
             })
             .on('touchmove', function(e) {
@@ -184,30 +220,46 @@
      * 触摸移动Move
      */
     Refresh.prototype.touchMove = function(e, elem) {
-        var that = this,
-            currentY = e.touches[0].pageY,
-            viewTop = viewHeight + that.scrollTop;
-            // viewTop = viewHeight + elem.scrollTop();
-
-        // 设置移动方向
-        if ( currentY - that.startY > 0 ) {
-            that.opts.movePosition = 'down';
-        } else {
-            that.opts.movePosition = 'up';
-        }    
-  
-        var distance = currentY - that.startY;
-
-        // 当前处于首屏，50像素容差值 && 向下滑动刷新
-        if ( that.scrollTop < that.opts.distanceToRefresh && that.opts.movePosition === 'down'  ) {
-
-            that.isPullToRefresh = true;
-            that.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ();
-            e.preventDefault();
+        var target = $(e.target);
+        //如果不是在拖动content, 则不触发.
+        if (!target.parents(this.opts.contentEl).size() || !this.opts.isRefresh) {
             return;
         }
 
-        that.isPullToRefresh = false;
+        var currentX = e.touches[0].pageX,
+            currentY = e.touches[0].pageY;
+
+        // 如果横向滚动大于纵向滚动. 取消触发事件
+        if (Math.abs(currentX - this.startX) > Math.abs(currentY - this.startY)) {
+            this.isPullToRefresh = false;
+            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)';
+            return;
+        }
+
+        // 设置移动方向
+        if (currentY - this.startY > 0) {
+            this.opts.movePosition = 'down';
+        }
+        else {
+            this.opts.movePosition = 'up';
+        }
+
+        // distance在区间内按正弦分布
+        var distance = currentY - this.startY;
+            distance = distance < this.opts.maxDistanceToRefresh ? distance : this.opts.maxDistanceToRefresh;
+            distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance;
+
+        // 当前处于首屏，50像素容差值 && 向下滑动刷新
+        if ( this.scrollTop < this.opts.minDistanceToRefresh && this.opts.movePosition === 'down'  ) {
+            this.$pullToRefresh.show();
+            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ();
+            e.preventDefault();
+            this.isPullToRefresh = true;
+            return;
+        }
+
+        this.$pullToRefresh.hide();
+        this.isPullToRefresh = false;
         
     };
 
@@ -217,7 +269,7 @@
     Refresh.prototype.touchEnd = function(e) {
         var that = this;
 
-        if ( !that.isPullToRefresh ) {
+        if (!this.isPullToRefresh) {
             return;
         }
 
@@ -225,24 +277,37 @@
          * 回调执行完，回调
          */   
         function complete() {
-            that.$pullToRefresh.hide();
+            this.$pullToRefresh.hide();
+            this.wrapHeight = this.$content.height();
         }
 
-        // 添加动画事件
-        that.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
-
-        that.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,0)' + Util.translateZ();
-
-        that.$pullToRefresh.show();
-        // 回调
-        that.opts.refreshCallback && that.opts.refreshCallback(complete);
-        
-
+        // 500ms回弹
         setTimeout(function() {
             that.$content[0].style[Util.prefixStyle('transform')] = '';
             that.$content[0].style[Util.prefixStyle('transition')] = '';
-            
-        }, 300)
+        }, 500);
+
+        // 更新refresh 状态
+        this.isPullToRefresh = false;
+
+        // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
+        var now = new Date().getTime();
+
+        if(this.opts.interval && now - this.loadingFinishTime < this.opts.interval){
+            complete();
+            return;
+        }
+
+        this.loadingFinishTime = now;
+
+        // 添加动画事件
+        this.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
+        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,0)' + Util.translateZ();
+
+        this.$pullToRefresh.show();
+        // 回调
+        this.opts.refreshCallback && this.opts.refreshCallback(complete);
+
     };
 
     /**
@@ -257,21 +322,33 @@
         /**
          * 回调执行完，回调
          */   
-        function complete() {
+        function complete(status) {
             that.isLoading = false;
-            that.wrapHeight = that.$content.height();
             that.$loadingMore.hide();
-        }    
 
-        if ( that.wrapHeight <= viewTop  && that.oldScrollTop < scrollTop && !that.isLoading ) {
-            that.isLoading = true;
+            if("finish" == status){
+                that.$wrap.off("scroll", that.scrollEvent);
+            }
 
-            that.$loadingMore.show();
+            that.wrapHeight = that.$content.height();
+        }
 
-            that.opts.loadingMoreCallback && that.opts.loadingMoreCallback(complete);
-        }    
-        
-        that.oldScrollTop = scrollTop;
+        if ( this.wrapHeight <= viewTop + 10  && this.oldScrollTop < scrollTop && !this.isLoading ) {
+            // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
+            var now = new Date().getTime();
+            if(this.opts.interval && now - this.loadingFinishTime < this.opts.interval){
+                return;
+            }
+            this.loadingFinishTime = now;
+
+            this.$loadingMore.show();
+            // loading状态更新
+            this.isLoading = true;
+
+            this.opts.loadingMoreCallback && this.opts.loadingMoreCallback(complete);
+        }
+
+        this.oldScrollTop = scrollTop;
 
     };
 
