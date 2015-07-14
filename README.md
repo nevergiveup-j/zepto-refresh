@@ -11,6 +11,9 @@ http:
 ## 引入zepto.refresh.js
 	<script src="zepto.refresh.js"></script>
 
+## options <code>Object</code>配置
+	
+
 ## JS初始化
 	$(window).refresh({
 		// 内容元素
