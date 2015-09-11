@@ -3,7 +3,7 @@ Zepto.refresh.js
 实现下拉到底部和上拉到顶部再拉就出现刷新效果
 
 ## 查看效果地址
-[Zepto.refresh/](http://nevergiveup-j.github.io/Zepto.refresh/)
+[Zepto.refresh](http://nevergiveup-j.github.io/Zepto.refresh/)
 
 ## 基于zepto框架
 	<script src="zepto.min.js"></script>
