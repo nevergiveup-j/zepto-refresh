@@ -28,9 +28,16 @@ a:hover {
 	color:#000;
 }
 
-
+.header {
+	height: 40px;
+	line-height: 40px;
+	background: #666;
+	color: #fff;
+	text-align: center;
+}
 .wrap {
 	height: 100%;
+	overflow: hidden;
 }
 .content li {
 	padding-left: 20px;
@@ -43,6 +50,11 @@ a:hover {
 </style>
 </head>
 <body>
+
+<div class="header">
+	header
+</div>
+
 <div class="wrap">
 	<div class="content" id="J_scrller">
 		<ul>
@@ -80,6 +92,9 @@ a:hover {
 		</ul>
 	</div>
 </div>
+<div class="footer">
+	footer
+</div>
 </body>
 </html>
 <script src="zepto.min.js"></script>
@@ -89,10 +104,13 @@ var totalNumber = 30;
 
 $(window).refresh({
 	contentEl: '#J_scrller',
+	isRefresh: true,
+	isLoadingMore: false,
 	// 向上
 	refreshCallback: function(complete) {
 		 setTimeout(function() {
-			 window.location.reload();
+			 // window.location.reload();
+			 console.log('reload');
 		 }, 1000)
 	},
 	// 

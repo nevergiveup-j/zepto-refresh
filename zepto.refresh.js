@@ -71,10 +71,12 @@
         contentEl: '#J_content',
         // 默认开启刷新
         isRefresh: true,
+        // 默认开启加载更多
+        isLoadingMore: true,
         // 触摸移动的方向
         movePosition   : null,
         // 下拉阈值
-        minDistanceToRefresh: 50,
+        minDistanceToRefresh: 100,
         // 下拉最大阈值
         maxDistanceToRefresh: 200,
         // 更新限制时间, 默认不限制
@@ -101,6 +103,7 @@
         this.$content = $(this.opts.contentEl);
 
         this.startY = 0;
+        this.refreshHeight = 0;
         this.isPullToRefresh = false;
         this.isLoading = false;
         this.wrapHeight = this.$content.height();
@@ -117,6 +120,7 @@
      */
     Refresh.prototype.init = function(){
         this.loadingRender();
+
         this.bind();
     };
 
@@ -128,24 +132,12 @@
 
         var refreshTpl = [
             '<style>',
-            '.preloader-refresh {display:none;position: absolute;top: 0;left: 0;width: 100%;text-align: center;padding: 10px 0;z-index: 800}',
-            '.preloader-refresh .preloader-refresh-content {width: 40px;height: 40px;margin: 0 auto;overflow: hidden;background-color: #fafafa;border-radius: 40px;box-shadow: 0 4px 10px #bbb}',
+            '.preloader-refresh {width: 100%;text-align: center;padding: 10px 0;}',
+            '.preloader-refresh .icon-refresh {display: inline-block;width: 40px;height: 40px; background: url(images/pull-icon@2x.png) no-repeat 0 0;background-size: 40px 80px;-webkit-transition-property:-webkit-transform;-webkit-transition-duration:250ms;-webkit-transform:rotate(0deg) translateZ(0);}',
+            '.preloader-refresh-flip .icon-refresh {-webkit-transform:rotate(-180deg) translateZ(0);}',
             '</style>',
             '<div class="preloader-refresh">',
-                '<div class="preloader-refresh-content">',
-                    '<svg id="loader-tip-svg" x="0px" y="0px"',
-                        'width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">',
-                        '<path fill="#dd0202" d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z">',
-                            '<animateTransform attributeType="xml"',
-                                'attributeName="transform"',
-                                'type="rotate"',
-                                'from="0 25 25"',
-                                'to="360 25 25"',
-                                'dur="0.6s"',
-                                'repeatCount="indefinite"/>',
-                        '</path>',
-                    '</svg>',
-                '</div>',
+                '<i class="icon-refresh"></i>',
             '</div>'
         ].join('');
 
@@ -175,25 +167,28 @@
         ].join('');
 
         // 刷新模板
-        if ( that.opts.isRefresh ) {
-            that.$content.before( refreshTpl );
-            that.$pullToRefresh = $('.preloader-refresh');
+        if(this.opts.isRefresh) {
+            this.$content.prepend( refreshTpl );
+            this.$pullToRefresh = $('.preloader-refresh');
+            this.refreshHeight = this.$pullToRefresh.height();
+            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + this.refreshHeight + 'px)' + Util.translateZ();
         }
 
         // 加载更多模板
-        that.$content.after( moveTpl );
-        that.$loadingMore = $('.preloader-loading-more');
-
+        if(this.opts.isLoadingMore) {
+            this.$content.after( moveTpl );
+            this.$loadingMore = $('.preloader-loading-more');
+        }
     };
-    
+
     /**
-     * 事件开始
+     * 事件
      */
     Refresh.prototype.bind = function() {
         var that = this,
             timer = null;
 
-        that.$wrap
+        this.$wrap
             .on('touchstart', function(e) {
                 that.startX = e.touches[0].pageX;
                 that.startY = e.touches[0].pageY;
@@ -204,16 +199,13 @@
                 that.touchMove(e, $(this));
             })
             .on('touchend', function(e) {
-
                 that.touchEnd(e);
-            }).
-            on('scroll', function() {
+            })
+            .on('scroll', function() {
                 timer = setTimeout(function() {
                     that.getLoadMore( that.$wrap );
                 }, 300);
             });
-
-
     };
 
     /**
@@ -222,22 +214,22 @@
     Refresh.prototype.touchMove = function(e, elem) {
         var target = $(e.target);
         //如果不是在拖动content, 则不触发.
-        if (!target.parents(this.opts.contentEl).size() || !this.opts.isRefresh) {
+        if (!target.parents(this.opts.contentEl).size()) {
             return;
         }
 
-        var currentX = e.touches[0].pageX,
-            currentY = e.touches[0].pageY;
+        var currentX = e.touches[0].pageX - this.startX,
+            currentY = e.touches[0].pageY - this.startY;
 
         // 如果横向滚动大于纵向滚动. 取消触发事件
-        if (Math.abs(currentX - this.startX) > Math.abs(currentY - this.startY)) {
+        if (Math.abs(currentX) > Math.abs(currentY)) {
             this.isPullToRefresh = false;
-            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)';
+            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + this.refreshHeight + 'px)' + Util.translateZ();
             return;
         }
 
         // 设置移动方向
-        if (currentY - this.startY > 0) {
+        if (currentY > 0) {
             this.opts.movePosition = 'down';
         }
         else {
@@ -245,16 +237,24 @@
         }
 
         // distance在区间内按正弦分布
-        var distance = currentY - this.startY;
+        var distance = currentY;
             distance = distance < this.opts.maxDistanceToRefresh ? distance : this.opts.maxDistanceToRefresh;
-            distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance;
+            distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance - this.refreshHeight;
+
 
         // 当前处于首屏，50像素容差值 && 向下滑动刷新
         if ( this.scrollTop < this.opts.minDistanceToRefresh && this.opts.movePosition === 'down'  ) {
-            this.$pullToRefresh.show();
-            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ();
+            // 
+            if(currentY >= this.opts.minDistanceToRefresh){
+                this.$pullToRefresh.addClass('preloader-refresh-flip');
+                this.isPullToRefresh = true;
+            }else{
+                this.$pullToRefresh.removeClass('preloader-refresh-flip');
+                this.isPullToRefresh = false;
+            }
+            
+            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ(); 
             e.preventDefault();
-            this.isPullToRefresh = true;
             return;
         }
 
@@ -269,10 +269,6 @@
     Refresh.prototype.touchEnd = function(e) {
         var that = this;
 
-        if (!this.isPullToRefresh) {
-            return;
-        }
-
         /**
          * 回调执行完，回调
          */   
@@ -283,12 +279,8 @@
 
         // 500ms回弹
         setTimeout(function() {
-            that.$content[0].style[Util.prefixStyle('transform')] = '';
             that.$content[0].style[Util.prefixStyle('transition')] = '';
         }, 500);
-
-        // 更新refresh 状态
-        this.isPullToRefresh = false;
 
         // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
         var now = new Date().getTime();
@@ -302,11 +294,15 @@
 
         // 添加动画事件
         this.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
-        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,0)' + Util.translateZ();
+        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + this.refreshHeight + 'px)' + Util.translateZ();
 
-        this.$pullToRefresh.show();
+        // this.$pullToRefresh.show();
         // 回调
-        this.opts.refreshCallback && this.opts.refreshCallback(complete);
+        if (this.isPullToRefresh) {
+            this.opts.refreshCallback && this.opts.refreshCallback(complete);
+            // 更新refresh 状态
+            this.isPullToRefresh = false;
+        }
 
     };
 
