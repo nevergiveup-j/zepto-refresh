@@ -298,9 +298,7 @@
             // 500ms回弹
             setTimeout(function() {
                 that.$content[0].style[Util.prefixStyle('transition')] = '';
-                that.$content[0].style[Util.prefixStyle('transform')] = '';
                 that.$pullToRefresh[0].style[Util.prefixStyle('transition')] = '';
-                that.$pullToRefresh[0].style[Util.prefixStyle('transform')] = '';
             }, 500);
         };
 
