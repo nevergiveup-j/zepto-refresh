@@ -110,6 +110,7 @@ $(window).refresh({
 	refreshCallback: function(complete) {
 		 setTimeout(function() {
 			 // window.location.reload();
+			 complete();
 			 console.log('reload');
 		 }, 1000)
 	},

@@ -75,7 +75,7 @@
         isLoadingMore: true,
         // 触摸移动的方向
         movePosition   : null,
-        // 下拉阈值
+        // 下拉最小阈值
         minDistanceToRefresh: 100,
         // 下拉最大阈值
         maxDistanceToRefresh: 200,
@@ -132,9 +132,14 @@
 
         var refreshTpl = [
             '<style>',
-            '.preloader-refresh {width: 100%;text-align: center;padding: 10px 0;}',
+            '.preloader-refresh {width: 100%;text-align: center;padding: 5px 0;}',
             '.preloader-refresh .icon-refresh {display: inline-block;width: 40px;height: 40px; background: url(images/pull-icon@2x.png) no-repeat 0 0;background-size: 40px 80px;-webkit-transition-property:-webkit-transform;-webkit-transition-duration:250ms;-webkit-transform:rotate(0deg) translateZ(0);}',
             '.preloader-refresh-flip .icon-refresh {-webkit-transform:rotate(-180deg) translateZ(0);}',
+            '.preloader-refresh-loading .icon-refresh {background-position:0 100%;-webkit-transform:rotate(0deg) translateZ(0);-webkit-transition-duration:0ms;-webkit-animation-name:refreshLoading;-webkit-animation-duration:2s;-webkit-animation-iteration-count:infinite;-webkit-animation-timing-function:linear;}',
+            '@-webkit-keyframes refreshLoading {',
+                'from { -webkit-transform:rotate(0deg) translateZ(0); }',
+                'to { -webkit-transform:rotate(360deg) translateZ(0); }',
+            '}',
             '</style>',
             '<div class="preloader-refresh">',
                 '<i class="icon-refresh"></i>',
@@ -273,14 +278,23 @@
          * 回调执行完，回调
          */   
         function complete() {
-            this.$pullToRefresh.hide();
-            this.wrapHeight = this.$content.height();
-        }
+            that.$pullToRefresh.removeClass('preloader-refresh-loading');
+            that.wrapHeight = that.$content.height();
+            that.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
+            that.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + that.refreshHeight + 'px)' + Util.translateZ();
 
-        // 500ms回弹
-        setTimeout(function() {
-            that.$content[0].style[Util.prefixStyle('transition')] = '';
-        }, 500);
+            claerStyle();
+        };
+
+        // 清除样式
+        function claerStyle() {
+            // 500ms回弹
+            setTimeout(function() {
+                that.$content[0].style[Util.prefixStyle('transition')] = '';
+            }, 500);
+        };
+
+        claerStyle();
 
         // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
         var now = new Date().getTime();
@@ -292,13 +306,22 @@
 
         this.loadingFinishTime = now;
 
+        var distance = 0;
+
+        // 向下滑动距离最小阈值
+        if (!this.isPullToRefresh) {
+            distance = this.refreshHeight;
+        }
+
         // 添加动画事件
         this.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
-        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + this.refreshHeight + 'px)' + Util.translateZ();
+        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + distance + 'px)' + Util.translateZ();
 
-        // this.$pullToRefresh.show();
         // 回调
         if (this.isPullToRefresh) {
+            this.$pullToRefresh
+                .removeClass('preloader-refresh-flip')
+                .addClass('preloader-refresh-loading');
             this.opts.refreshCallback && this.opts.refreshCallback(complete);
             // 更新refresh 状态
             this.isPullToRefresh = false;
