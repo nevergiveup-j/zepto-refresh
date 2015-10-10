@@ -28,7 +28,8 @@ a:hover {
 	color:#000;
 }
 
-.header {
+.header,
+.footer {
 	height: 40px;
 	line-height: 40px;
 	background: #666;
@@ -36,7 +37,7 @@ a:hover {
 	text-align: center;
 }
 .wrap {
-	height: 100%;
+	position: relative;
 	overflow: hidden;
 }
 .content li {
@@ -98,14 +99,14 @@ a:hover {
 </body>
 </html>
 <script src="zepto.min.js"></script>
-<script src="zepto.refresh.js"></script>
+<script src="zepto.refresh.js?t=2015101002"></script>
 <script>
 var totalNumber = 30;
 
 $(window).refresh({
 	contentEl: '#J_scrller',
 	isRefresh: true,
-	isLoadingMore: false,
+	isLoadingMore: true,
 	// 向上
 	refreshCallback: function(complete) {
 		 setTimeout(function() {

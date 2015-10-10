@@ -1,8 +1,8 @@
 /**
  * @Description: 下拉到底部和上拉到顶部再拉就出现刷新效果
  * @Author: wangjun
- * @Update: 2015-07-13 18:00
- * @version: 1.0
+ * @Update: 2015-10-13 13:27
+ * @version: 1.1
  * @Github URL: https://github.com/nevergiveup-j/Zepto.refresh
  */
  
@@ -132,7 +132,7 @@
 
         var refreshTpl = [
             '<style>',
-            '.preloader-refresh {width: 100%;text-align: center;padding: 5px 0;}',
+            '.preloader-refresh {position: absolute;top: -50px;left: 0;right: 0;width: 100%;text-align: center;padding: 5px 0;}',
             '.preloader-refresh .icon-refresh {display: inline-block;width: 40px;height: 40px; background: url(images/pull-icon@2x.png) no-repeat 0 0;background-size: 40px 80px;-webkit-transition-property:-webkit-transform;-webkit-transition-duration:250ms;-webkit-transform:rotate(0deg) translateZ(0);}',
             '.preloader-refresh-flip .icon-refresh {-webkit-transform:rotate(-180deg) translateZ(0);}',
             '.preloader-refresh-loading .icon-refresh {background-position:0 100%;-webkit-transform:rotate(0deg) translateZ(0);-webkit-transition-duration:0ms;-webkit-animation-name:refreshLoading;-webkit-animation-duration:2s;-webkit-animation-iteration-count:infinite;-webkit-animation-timing-function:linear;}',
@@ -173,10 +173,9 @@
 
         // 刷新模板
         if(this.opts.isRefresh) {
-            this.$content.prepend( refreshTpl );
+            this.$content.before( refreshTpl );
             this.$pullToRefresh = $('.preloader-refresh');
             this.refreshHeight = this.$pullToRefresh.height();
-            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + this.refreshHeight + 'px)' + Util.translateZ();
         }
 
         // 加载更多模板
@@ -193,24 +192,28 @@
         var that = this,
             timer = null;
 
-        this.$wrap
-            .on('touchstart', function(e) {
-                that.startX = e.touches[0].pageX;
-                that.startY = e.touches[0].pageY;
-            })
-            .on('touchmove', function(e) {
-                that.scrollTop = $(this).scrollTop();
+        // 未开启刷新不添加事件
+        if(this.opts.isRefresh) {
+            this.$wrap
+                .on('touchstart', function(e) {
+                    that.startX = e.touches[0].pageX;
+                    that.startY = e.touches[0].pageY;
+                })
+                .on('touchmove', function(e) {
+                    that.scrollTop = $(this).scrollTop();
 
-                that.touchMove(e, $(this));
-            })
-            .on('touchend', function(e) {
-                that.touchEnd(e);
-            })
-            .on('scroll', function() {
-                timer = setTimeout(function() {
-                    that.getLoadMore( that.$wrap );
-                }, 300);
-            });
+                    that.touchMove(e, $(this));
+                })
+                .on('touchend', function(e) {
+                    that.touchEnd(e);
+                });
+        }
+
+        this.$wrap.on('scroll', function() {
+            timer = setTimeout(function() {
+                that.getLoadMore( that.$wrap );
+            }, 300);
+        });
     };
 
     /**
@@ -229,7 +232,8 @@
         // 如果横向滚动大于纵向滚动. 取消触发事件
         if (Math.abs(currentX) > Math.abs(currentY)) {
             this.isPullToRefresh = false;
-            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + this.refreshHeight + 'px)' + Util.translateZ();
+            this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)' + Util.translateZ();
+            this.$pullToRefresh[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)' + Util.translateZ();
             return;
         }
 
@@ -244,7 +248,7 @@
         // distance在区间内按正弦分布
         var distance = currentY;
             distance = distance < this.opts.maxDistanceToRefresh ? distance : this.opts.maxDistanceToRefresh;
-            distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance - this.refreshHeight;
+            distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance;
 
 
         // 当前处于首屏，50像素容差值 && 向下滑动刷新
@@ -259,11 +263,12 @@
             }
             
             this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ(); 
+            this.$pullToRefresh[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ(); 
             e.preventDefault();
             return;
         }
 
-        this.$pullToRefresh.hide();
+        // this.$pullToRefresh.hide();
         this.isPullToRefresh = false;
         
     };
@@ -281,7 +286,9 @@
             that.$pullToRefresh.removeClass('preloader-refresh-loading');
             that.wrapHeight = that.$content.height();
             that.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
-            that.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + that.refreshHeight + 'px)' + Util.translateZ();
+            that.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)' + Util.translateZ();
+            that.$pullToRefresh[0].style[Util.prefixStyle('transition')] = 'all .3s';
+            that.$pullToRefresh[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)' + Util.translateZ(); 
 
             claerStyle();
         };
@@ -291,6 +298,9 @@
             // 500ms回弹
             setTimeout(function() {
                 that.$content[0].style[Util.prefixStyle('transition')] = '';
+                that.$content[0].style[Util.prefixStyle('transform')] = '';
+                that.$pullToRefresh[0].style[Util.prefixStyle('transition')] = '';
+                that.$pullToRefresh[0].style[Util.prefixStyle('transform')] = '';
             }, 500);
         };
 
@@ -309,13 +319,15 @@
         var distance = 0;
 
         // 向下滑动距离最小阈值
-        if (!this.isPullToRefresh) {
+        if (this.isPullToRefresh) {
             distance = this.refreshHeight;
         }
 
         // 添加动画事件
         this.$content[0].style[Util.prefixStyle('transition')] = 'all .3s';
-        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, -' + distance + 'px)' + Util.translateZ();
+        this.$content[0].style[Util.prefixStyle('transform')] = 'translate(0, ' + distance + 'px)' + Util.translateZ();
+        this.$pullToRefresh[0].style[Util.prefixStyle('transition')] = 'all .3s';
+        this.$pullToRefresh[0].style[Util.prefixStyle('transform')] = 'translate(0,' + distance + 'px)' + Util.translateZ(); 
 
         // 回调
         if (this.isPullToRefresh) {
@@ -352,7 +364,7 @@
             that.wrapHeight = that.$content.height();
         }
 
-        if ( this.wrapHeight <= viewTop + 10  && this.oldScrollTop < scrollTop && !this.isLoading ) {
+        if ( this.wrapHeight <= viewTop + 10  && this.oldScrollTop < scrollTop && !this.isLoading && this.opts.isLoadingMore ) {
             // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
             var now = new Date().getTime();
             if(this.opts.interval && now - this.loadingFinishTime < this.opts.interval){
