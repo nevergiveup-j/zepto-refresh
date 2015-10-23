@@ -290,11 +290,11 @@
             that.$pullToRefresh[0].style[Util.prefixStyle('transition')] = 'all .3s';
             that.$pullToRefresh[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)' + Util.translateZ(); 
 
-            claerStyle();
+            clearStyle();
         };
 
         // 清除样式
-        function claerStyle() {
+        function clearStyle() {
             // 500ms回弹
             setTimeout(function() {
                 that.$content[0].style[Util.prefixStyle('transition')] = '';
@@ -302,7 +302,7 @@
             }, 500);
         };
 
-        claerStyle();
+        clearStyle();
 
         // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
         var now = new Date().getTime();
