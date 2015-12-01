@@ -1,10 +1,10 @@
 {
   "name": "zepto-refresh",
-  "version": "1.0.1",
-  "description": "实现下拉到底部和上拉到顶部再拉就出现刷新效果",
+  "version": "1.0.2",
+  "description": "In the end to achieve the drop-down and pulled up to the top of the unit and then pull it appears refresh effect",
   "main": "zepto.refresh.js",
   "scripts": {
-    "start": "gulp compress"
+    "test": "gulp compress"
   },
   "repository": {
     "type": "git",
