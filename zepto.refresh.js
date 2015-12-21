@@ -1,8 +1,8 @@
 /**
  * @Description: 下拉到底部和上拉到顶部再拉就出现刷新效果
  * @Author: wangjun
- * @Update: 2015-10-29 13:27
- * @version: 1.1
+ * @Update: 2015-12-21 18:00
+ * @version: 1.2
  * @Github URL: https://github.com/nevergiveup-j/zepto-refresh
  */
  
@@ -70,17 +70,19 @@
         // 内容ID
         contentEl: '#J_content',
         // 默认开启刷新
-        isRefresh: true,
+        isRefresh              : true,
         // 默认开启加载更多
-        isLoadingMore: true,
+        isLoadingMore          : true,
         // 触摸移动的方向
-        movePosition   : null,
+        movePosition           : null,
+        // 下拉可刷新高度
+        distanceToRefresh      : 100,
         // 下拉最小阈值
-        minDistanceToRefresh: 100,
+        minDistanceToRefresh   : 100,
         // 下拉最大阈值
-        maxDistanceToRefresh: 200,
+        maxDistanceToRefresh   : 200,
         // 更新限制时间, 默认不限制
-        interval : 5,
+        interval               : 5,
         // 刷新回调
         refreshCallback: function() {
 
@@ -106,6 +108,7 @@
         this.refreshHeight = 0;
         this.isPullToRefresh = false;
         this.isLoading = false;
+        this.finished = false;
         this.wrapHeight = this.$content.height();
         this.oldScrollTop = 0;
         this.loadingFinishTime = new Date().getTime();
@@ -122,6 +125,7 @@
         this.loadingRender();
 
         this.bind();
+        this.reBindScroll();
     };
 
     /**
@@ -149,7 +153,7 @@
 
         var moveTpl = [
             '<style>',
-            '.preloader-loading-more {padding: 15px 10px;text-align:center;}',
+            '.preloader-loading-more {display: none;padding: 15px 10px;text-align:center;}',
             '.preloader-loading-more:before,.preloader-loading-more:after {content:""}',
             '.preloader-loading-more .loading-bounce, .preloader-loading-more:before, .preloader-loading-more:after {width: 15px;height: 15px;background-color: #dd0202;-webkit-border-radius: 100%;border-radius: 100%;display: inline-block; -webkit-animation: bouncedelay 1.4s infinite ease-in-out;animation: bouncedelay 1.4s infinite ease-in-out; -webkit-animation-fill-mode: both;animation-fill-mode: both;}',
             '.preloader-loading-more:before {-webkit-animation-delay: -0.32s;animation-delay: -0.32s;}',
@@ -189,8 +193,7 @@
      * 事件
      */
     Refresh.prototype.bind = function() {
-        var that = this,
-            timer = null;
+        var that = this;
 
         // 未开启刷新不添加事件
         if(this.opts.isRefresh) {
@@ -209,11 +212,22 @@
                 });
         }
 
-        this.$wrap.on('scroll', function() {
-            timer = setTimeout(function() {
-                that.getLoadMore( that.$wrap );
-            }, 300);
-        });
+    };
+
+    /**
+     * 事件
+     */
+    Refresh.prototype.reBindScroll = function() {
+        var that = this,
+            timer = null;
+
+        this.$wrap
+            .off('scroll.refresh')
+            .on('scroll.refresh', function() {
+                timer = setTimeout(function() {
+                    that.getLoadMore();
+                }, 300);
+            });
     };
 
     /**
@@ -240,8 +254,7 @@
         // 设置移动方向
         if (currentY > 0) {
             this.opts.movePosition = 'down';
-        }
-        else {
+        }else {
             this.opts.movePosition = 'up';
         }
 
@@ -251,9 +264,9 @@
             distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance;
 
 
-        // 当前处于首屏，50像素容差值 && 向下滑动刷新
-        if ( this.scrollTop < this.opts.minDistanceToRefresh && this.opts.movePosition === 'down'  ) {
-            // 
+        // 当前处于首屏，distanceToRefresh像素容差值 && 向下滑动刷新
+        if ( this.scrollTop <= this.opts.distanceToRefresh && this.opts.movePosition === 'down'  ) {
+            
             if(currentY >= this.opts.minDistanceToRefresh){
                 this.$pullToRefresh.addClass('preloader-refresh-flip');
                 this.isPullToRefresh = true;
@@ -290,11 +303,17 @@
             that.$pullToRefresh[0].style[Util.prefixStyle('transition')] = 'all .3s';
             that.$pullToRefresh[0].style[Util.prefixStyle('transform')] = 'translate(0, 0)' + Util.translateZ(); 
 
-            claerStyle();
+            // 下拉加载到最后一页，异步刷新重新开始scroll事件
+            if(that.finished){
+                that.finished = false;
+                that.reBindScroll();
+            }
+
+            clearStyle();
         };
 
         // 清除样式
-        function claerStyle() {
+        function clearStyle() {
             // 500ms回弹
             setTimeout(function() {
                 that.$content[0].style[Util.prefixStyle('transition')] = '';
@@ -302,7 +321,7 @@
             }, 500);
         };
 
-        claerStyle();
+        clearStyle();
 
         // 如果存在最大时间限制, 切刷新时间未超出该时间，则不刷新
         var now = new Date().getTime();
@@ -342,9 +361,14 @@
     /**
      * 加载更多
      */
-    Refresh.prototype.getLoadMore = function(elem) {
-        var that = this,
-            scrollTop = elem.scrollTop(),
+    Refresh.prototype.getLoadMore = function() {
+        var that = this;
+
+        if(this.finished){
+            return;
+        }
+
+        var scrollTop = this.$wrap.scrollTop(),
             viewTop = viewHeight + scrollTop,
             moreTime = null;
 
@@ -352,13 +376,13 @@
          * 回调执行完，回调
          */   
         function complete(status) {
-            that.isLoading = false;
-            that.$loadingMore.hide();
-
             if("finish" == status){
-                that.$wrap.off("scroll", that.scrollEvent);
+                that.finished = true;
+                that.$wrap.off("scroll.refresh");
             }
 
+            that.isLoading = false;
+            that.$loadingMore.hide();
             that.wrapHeight = that.$content.height();
         }
 
