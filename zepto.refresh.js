@@ -5,16 +5,9 @@
  * @version: 1.2
  * @Github URL: https://github.com/nevergiveup-j/zepto-refresh
  */
- 
-;(function (factory) {
-    if (typeof define === "function" && define.amd) {
-        // AMD模式
-        define([ "Zepto" ], factory);
-    } else {
-        // 全局模式
-        factory(Zepto);
-    }
-}(function ($) {
+
+var Zepto = require('./zepto.min.js');
+
     "use strict";
 
     /**
@@ -405,12 +398,4 @@
 
     };
 
-    $.fn.refresh = function( options, callback ) {
-        return this.each(function() {
-            new Refresh( $(this), options );
-        })
-    };
-    
-    // ADM 
-    return Refresh;
-}));
+module.exports = Refresh;
