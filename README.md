@@ -12,10 +12,12 @@ Zepto.refresh.js
 	<script src="zepto.refresh.js"></script>
 
 ## options <code>Object</code>配置
-| 参数                      | 说明          |
-| ------------------------- | ------------- |
-| contentEl: #J_content     | 内容ID        |
-| isRefresh: true           | 默认开启刷新  |	
+| 参数                      | 类型          | 说明              |
+| ------------------------- | ------------- | ----------------- |
+| contentEl: #J_content     | String        | 内容ID            |
+| isRefresh: true           | Boolean       | 默认开启刷新	    | 
+| isLoadingMore: true       | Boolean       | 默认开启加载更多	| 
+| distanceToRefresh: 100    | Number        | 下拉可刷新高度	| 
 
 ## JS初始化
 	$(window).refresh({
