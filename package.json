@@ -1,6 +1,6 @@
 {
   "name": "zepto-refresh",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "In the end to achieve the drop-down and pulled up to the top of the unit and then pull it appears refresh effect",
   "main": "zepto.refresh.js",
   "scripts": {
