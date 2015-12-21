@@ -20,7 +20,7 @@ Zepto.refresh.js
 | distanceToRefresh: 100             | Number        | 下拉可刷新高度	     | 
 | minDistanceToRefresh: 100          | Number        | 下拉最小阈值   	     | 
 | maxDistanceToRefresh: 200          | Number        | 下拉最大阈值   	     | 
-| interval: 5                        | Number        | 更新限制时间, 默认5ms | 
+| interval: 5                        | Number        | 更新限制时间, 默认不限制 | 
 | refreshCallback: function(){}      | Function      | 刷新回调              | 
 | loadingMoreCallback: function(){}  | Function      | 加载更多回调          | 
 
