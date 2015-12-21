@@ -7,22 +7,9 @@ Zepto.refresh.js
 
 	
 ## 引入zepto.refresh.js
-var Refresh = require('zepto-refresh');
+	var Refresh = require('zepto-refresh');
 
-## options <code>Object</code>配置
-| 参数                               | 类型          | 说明                  |
-| ---------------------------------- | ------------- | --------------------- |
-| contentEl: #J_content              | String        | 内容ID                |
-| isRefresh: true                    | Boolean       | 默认开启刷新	         | 
-| isLoadingMore: true                | Boolean       | 默认开启加载更多	     | 
-| distanceToRefresh: 100             | Number        | 下拉可刷新高度	     | 
-| minDistanceToRefresh: 100          | Number        | 下拉最小阈值   	     | 
-| maxDistanceToRefresh: 200          | Number        | 下拉最大阈值   	     | 
-| interval: 5                        | Number        | 更新限制时间, 默认不限制 | 
-| refreshCallback: function(){}      | Function      | 刷新回调              | 
-| loadingMoreCallback: function(){}  | Function      | 加载更多回调          | 
-
-## JS初始化
+## 初始化
 	new Refresh(
 		$(window),
 		{
@@ -40,6 +27,20 @@ var Refresh = require('zepto-refresh');
 		  }
 		}
 	);	
+
+
+## options <code>Object</code>配置
+| 参数                               | 类型          | 说明                  |
+| ---------------------------------- | ------------- | --------------------- |
+| contentEl: #J_content              | String        | 内容ID                |
+| isRefresh: true                    | Boolean       | 默认开启刷新	         | 
+| isLoadingMore: true                | Boolean       | 默认开启加载更多	     | 
+| distanceToRefresh: 100             | Number        | 下拉可刷新高度	     | 
+| minDistanceToRefresh: 100          | Number        | 下拉最小阈值   	     | 
+| maxDistanceToRefresh: 200          | Number        | 下拉最大阈值   	     | 
+| interval: 5                        | Number        | 更新限制时间, 默认不限制 | 
+| refreshCallback: function(){}      | Function      | 刷新回调              | 
+| loadingMoreCallback: function(){}  | Function      | 加载更多回调          | 
 
 ## 更新版本
 [v1.2内容](https://github.com/nevergiveup-j/zepto-refresh/wiki/%E6%9B%B4%E6%96%B0v1.2%E5%86%85%E5%AE%B9)
