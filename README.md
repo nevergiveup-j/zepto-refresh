@@ -39,3 +39,7 @@ Zepto.refresh.js
 			
 	  }
 	});	
+
+## 更新版本
+[v1.2内容](https://github.com/nevergiveup-j/zepto-refresh/wiki/%E6%9B%B4%E6%96%B0v1.2%E5%86%85%E5%AE%B9)
+
