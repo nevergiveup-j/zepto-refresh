@@ -153,7 +153,7 @@
 
         var moveTpl = [
             '<style>',
-            '.preloader-loading-more {display: none;padding: 15px 10px;text-align:center;}',
+            '.preloader-loading-more {display: block;padding: 15px 10px;text-align:center;}',
             '.preloader-loading-more:before,.preloader-loading-more:after {content:""}',
             '.preloader-loading-more .loading-bounce, .preloader-loading-more:before, .preloader-loading-more:after {width: 15px;height: 15px;background-color: #dd0202;-webkit-border-radius: 100%;border-radius: 100%;display: inline-block; -webkit-animation: bouncedelay 1.4s infinite ease-in-out;animation: bouncedelay 1.4s infinite ease-in-out; -webkit-animation-fill-mode: both;animation-fill-mode: both;}',
             '.preloader-loading-more:before {-webkit-animation-delay: -0.32s;animation-delay: -0.32s;}',
