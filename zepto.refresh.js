@@ -186,6 +186,10 @@
         if(this.opts.isLoadingMore) {
             this.$content.after( moveTpl );
             this.$loadingMore = $('.preloader-loading-more');
+
+            if(this.wrapHeight < viewHeight){
+                this.$loadingMore.hide();
+            }
         }
     };
 
