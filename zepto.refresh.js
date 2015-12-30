@@ -1,7 +1,7 @@
 /**
  * @Description: 下拉到底部和上拉到顶部再拉就出现刷新效果
  * @Author: wangjun
- * @Update: 2015-12-21 18:00
+ * @Update: 2015-12-30 12:00
  * @version: 1.2
  * @Github URL: https://github.com/nevergiveup-j/zepto-refresh
  */
