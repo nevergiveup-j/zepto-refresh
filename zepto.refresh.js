@@ -268,7 +268,7 @@
             distance = Math.sin(distance/this.opts.maxDistanceToRefresh) * distance;
 
 
-        // 当前处于首屏，distanceToRefresh像素容差值 && 向下滑动刷新
+        // 当前处于首屏，设置distanceToRefresh坐标 && 向下滑动刷新
         if ( this.scrollTop <= this.opts.distanceToRefresh && this.opts.movePosition === 'down'  ) {
             
             if(currentY >= this.opts.minDistanceToRefresh){
@@ -382,11 +382,11 @@
         function complete(status) {
             if("finish" == status){
                 that.finished = true;
+                that.$loadingMore.hide();
                 that.$wrap.off("scroll.refresh");
             }
 
             that.isLoading = false;
-            that.$loadingMore.hide();
             that.wrapHeight = that.$content.height();
         }
 
