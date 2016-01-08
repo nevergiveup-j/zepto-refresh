@@ -57,7 +57,7 @@ a:hover {
 </div>
 
 <div class="wrap">
-	<div class="content" id="J_scrller">
+	<div class="content" id="J_scroller">
 		<ul>
 			<li class="row">Row 1</li>
 			<li class="row">Row 2</li>
@@ -104,7 +104,7 @@ a:hover {
 var totalNumber = 30;
 
 $(window).refresh({
-	contentEl: '#J_scrller',
+	contentEl: '#J_scroller',
 	// 头部的高度
 	distanceToRefresh: 40,
 	// 开启刷新
@@ -130,6 +130,7 @@ $(window).refresh({
 
 		$('#J_scrller ul').append(tpl);
 		complete('finish');
+
 	}
 });	
 </script>
