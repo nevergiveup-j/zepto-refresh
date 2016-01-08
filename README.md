@@ -27,7 +27,7 @@ Zepto.refresh.js
 ## JS初始化
 	$(window).refresh({
 		// 内容元素
-	  contentEl: '#J_scrller',
+	  contentEl: '#J_scroller',
 	  // 开启刷新事件，默认true
 	  isRefresh: true,
 	  // 刷新回调
