@@ -17,7 +17,7 @@ npm install --save zepto-refresh
 <script src="zepto.refresh.js"></script>
 ```
 
-## 初始化
+## 使用
 ### NPM
 ```
 var Refresh = require('zepto-refresh');
