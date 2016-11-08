@@ -5,6 +5,8 @@
  * @version: 1.3
  * @Github URL: https://github.com/nevergiveup-j/zepto-refresh
  */
+
+var $ = require('./zepto.js');
  
 /**
  * 工具库
@@ -54,8 +56,6 @@ var Util = {
     }
 }
 
-
-var $ = require('./zepto.js');
 
 // 分享默认配置
 var defaults = {
@@ -402,4 +402,8 @@ Refresh.prototype.getLoadMore = function() {
 };
     
 
-module.exports = Refresh
+module.exports = function(elem, options) {
+    var wrap = (typeof elem === 'string') ? $(elem) : elem;
+
+    return new Refresh(wrap, options);
+}
