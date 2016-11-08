@@ -22,7 +22,7 @@ npm install --save zepto-refresh
 ```
 var Refresh = require('zepto-refresh');
 
-Refresh('.warp-bg-black', {
+Refresh('.wrap', {
   // 内容元素
   contentEl: '#J_scroller',
   // 开启刷新事件，默认true
